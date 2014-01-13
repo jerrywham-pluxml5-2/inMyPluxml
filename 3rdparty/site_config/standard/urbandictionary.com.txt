@@ -1,3 +1,0 @@
-title: //title
-body: //td[@id='content']
-test_url: http://www.urbandictionary.com/define.php?term=Grown-Ass
