@@ -40,10 +40,9 @@ class inMyPluxml extends plxPlugin {
 		
 		$string = '
 		if (isset($_GET[\'amp;source\']) && $_GET[\'amp;source\'] == \'bookmarklet\') {
-
-			$options = array(\'http\' => array(\'user_agent\' => \'pluxml\'));
+			$options = array(\'http\' => array(\'user_agent\' => \'poche\'));
 	        $context = stream_context_create($options);
-	        $json = file_get_contents(plxUtils::getRacine(). \'plugins/bookmark/3rdparty/makefulltextfeed.php?url=\'.urlencode(trim($_GET[\'post\'])).\'&max=5&links=preserve&exc=&format=json&submit=Create+Feed\', false, $context);
+	        $json = file_get_contents(plxUtils::getRacine(). \'plugins/inMyPluxml/3rdparty/makefulltextfeed.php?url=\'.urlencode(trim($_GET[\'post\'])).\'&max=5&links=preserve&exc=&format=json&submit=Create+Feed\', false, $context);
 	        $content = json_decode($json, true);
 	        $title = $content[\'rss\'][\'channel\'][\'item\'][\'title\'];
 	        $body = $content[\'rss\'][\'channel\'][\'item\'][\'description\'];
@@ -62,6 +61,9 @@ class inMyPluxml extends plxPlugin {
 			$meta_description = \'\';
 			$meta_keywords = \'\';
 			$title_htmltag = \'\';
+			if(empty($title)) {
+				$title = trim($_GET[\'amp;title\']);
+			}
 			$_SESSION[\'bookmarklet\'] = true;
 		}
 		';
@@ -135,9 +137,11 @@ class inMyPluxml extends plxPlugin {
 					$post = explode(\'&post=\', $get_p[\'path\']);
 					$get_p[\'path\'] = $post[0];
 					$source = \'bookmarklet\';
-					$post = str_replace(\'&source=bookmarklet\', \'\', $post[1]);
+					$title = explode(\'&title=\', $post[1]);
+					$post = str_replace(\'&title=\'.$title[1], \'\', $post[1]);
+					$title = str_replace(\'&source=bookmarklet\', \'\', $title[1]);
 				} else {
-					$post = $source = \'\';
+					$post = $title = $source = \'\';
 				}
 				$error = (!$get_p OR (isset($get_p[\'host\']) AND $racine[\'host\']!=$get_p[\'host\']));
 				if(!$error AND !empty($get_p[\'path\']) AND file_exists(PLX_ROOT.\'core/admin/\'.basename($get_p[\'path\'])) ) {
@@ -151,7 +155,7 @@ class inMyPluxml extends plxPlugin {
 					$redirect=$get_p[\'path\'].$query;
 				}
 				if (!empty($source)) {
-					$redirect .= \'?post=\'.urlencode($post).\'&source=bookmarklet\';
+					$redirect .= \'?post=\'.urlencode($post).\'&title=\'.urlencode($title).\'&source=bookmarklet\';
 				}
 			}
 			$connected = false;
@@ -186,8 +190,8 @@ class inMyPluxml extends plxPlugin {
 	 **/
 	public function AdminAuthTop() {
 		$string = '
-			if(!empty($_GET[\'post\']) && $_GET[\'source\'] == \'bookmarklet\') {
-				$redirect .=\'&post=\'.urlencode($_GET[\'post\']).\'&source=bookmarklet\';
+			if(!empty($_GET[\'post\']) && !empty($_GET[\'title\']) && $_GET[\'source\'] == \'bookmarklet\') {
+				$redirect .=\'&post=\'.urlencode($_GET[\'post\']).\'&title=\'.urlencode($_GET[\'title\']).\'&source=bookmarklet\';
 			}
 		';
 		echo "<?php".$string."?>";

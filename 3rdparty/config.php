@@ -316,7 +316,8 @@ $options->user_agents = array( 'lifehacker.com' => 'PHP/5.2',
 							   'gizmodo.com' => 'PHP/5.2',
 							   '.wikipedia.org' => 'Mozilla/5.2',
 							   '.fok.nl' => 'Googlebot/2.1',
-							   'getpocket.com' => 'PHP/5.2'
+							   'getpocket.com' => 'PHP/5.2',
+							   'pluxml.org'=>'PHP/5.2'
 							  );
 
 // URL Rewriting
