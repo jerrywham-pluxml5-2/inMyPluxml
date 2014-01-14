@@ -4,7 +4,7 @@
  *
  * @package	PLX
  * @version	1.1
- * @date	14/12/2014
+ * @date	14/01/2014
  * @author	Cyril MAGUIRE
  **/
 class inMyPluxml extends plxPlugin {
