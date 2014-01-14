@@ -3,8 +3,8 @@
  * Plugin inMyPluxml
  *
  * @package	PLX
- * @version	1.0
- * @date	12/12/2014
+ * @version	1.1
+ * @date	14/12/2014
  * @author	Cyril MAGUIRE
  **/
 class inMyPluxml extends plxPlugin {
@@ -20,8 +20,12 @@ class inMyPluxml extends plxPlugin {
 
 		# Appel du constructeur de la classe plxPlugin (obligatoire)
 		parent::__construct($default_lang);
-		
+
+		# droits pour accèder à la page config.php du plugin
+		$this->setConfigProfil(PROFIL_ADMIN, PROFIL_MANAGER);
+
 		# Déclarations des hooks		
+		$this->addHook('AdminArticlePrepend', 'AdminArticlePrepend');		
 		$this->addHook('AdminArticleInitData', 'AdminArticleInitData');		
 		$this->addHook('AdminArticleContent', 'AdminArticleContent');		
 		$this->addHook('AdminArticlePostData', 'AdminArticlePostData');		
@@ -29,11 +33,56 @@ class inMyPluxml extends plxPlugin {
 		$this->addHook('AdminAuthPrepend', 'AdminAuthPrepend');		
 		$this->addHook('AdminAuthTop', 'AdminAuthTop');		
 	}
-
+	/**
+	 * Méthode qui préconfigure le plugin
+	 *
+	 * @return	stdio
+	 * @author	Cyril MAGUIRE
+	 **/
+	public function onActivate() {
+		#Paramètres par défaut
+		if(!is_file($this->plug['parameters.xml'])) {
+			$this->setParam('catName', $this->getLang('L_CAT'), 'cdata');
+			$this->saveParams();
+		}
+	}
+	/**
+	 * Méthode qui crée la catégorie par défaut si elle n'existe pas
+	 *
+	 * @return	stdio
+	 * @author	Cyril MAGUIRE
+	 **/
+	public function AdminArticlePrepend() {
+		$string = '
+	        foreach($plxAdmin->aCats as $cat_id => $cat_name) {
+	        	if ($cat_name[\'name\'] == \''.$this->getParam('catName').'\') {
+	        		$alreadyExists = true;
+	        		$catId = $cat_id;
+	        		break;
+	        	} else {
+	        		$alreadyExists = false;
+	        	}
+	        }
+	        if ($alreadyExists === false) {
+	        	$_POST[\'new_category\'] = true;
+	        	$_POST[\'new_catname\'] = \''.$this->getParam('catName').'\';
+	        }
+	        # Ajout d\'une catégorie
+			if(isset($_POST[\'new_category\'])) {
+				# Ajout de la nouvelle catégorie
+				$plxAdmin->editCategories($_POST);
+				# On recharge la nouvelle liste
+				$plxAdmin->getCategories(path(\'XMLFILE_CATEGORIES\'));
+		        unset($_POST[\'new_category\']);
+		        unset($_POST[\'new_catname\']);
+			}
+		';
+		echo "<?php ".$string."?>";
+	}
 	/**
 	 * Méthode qui initialise les variables d'un article
 	 *
-	 * @return	stdio
+	 *  @return	stdio
 	 * @author	Cyril MAGUIRE
 	 **/	
 	public function AdminArticleInitData() {
@@ -50,7 +99,17 @@ class inMyPluxml extends plxPlugin {
 			# Alimentation des variables
 			$artId = \'0000\';
 			$author = $_SESSION[\'user\'];
-			$catId = array(\'draft\');
+			foreach($plxAdmin->aCats as $cat_id => $cat_name) {
+	        	if ($cat_name[\'name\'] == \''.$this->getParam('catName').'\') {
+	        		if (isset($catId) && is_array($catId)) {
+	        			$catId[] = $cat_id;
+	        		} else {
+	        			$catId = array();
+	        			$catId[] = $cat_id;
+	        		}
+	        		break;
+	        	}
+	        }
 			$date = array (\'year\' => date(\'Y\'),\'month\' => date(\'m\'),\'day\' => date(\'d\'),\'time\' => date(\'H:i\'));
 			$chapo = \'<p>Site d\\\'origine : <a href="\'.trim($_GET[\'post\']).\'">\'.trim($_GET[\'post\']).\'</a></p>\';
 			$content =  $body;
@@ -132,30 +191,19 @@ class inMyPluxml extends plxPlugin {
 			$redirect=$plxAdmin->aConf[\'racine\'].\'core/admin/\';
 			if(!empty($_GET[\'p\'])) {
 				$racine = parse_url($plxAdmin->aConf[\'racine\']);
-				$get_p = parse_url(urldecode($_GET[\'p\']));
-				if (strpos($get_p, \'post=\') !== false) {
-					$post = explode(\'&post=\', $get_p[\'path\']);
-					$get_p[\'path\'] = $post[0];
+				$G = urldecode($_GET[\'p\']);
+				if (strpos($G, \'post=\') !== false) {
+					$post = explode(\'&post=\', $G);
+					$get_p = $post[0];
 					$source = \'bookmarklet\';
 					$title = explode(\'&title=\', $post[1]);
 					$post = str_replace(\'&title=\'.$title[1], \'\', $post[1]);
 					$title = str_replace(\'&source=bookmarklet\', \'\', $title[1]);
 				} else {
-					$post = $title = $source = \'\';
-				}
-				$error = (!$get_p OR (isset($get_p[\'host\']) AND $racine[\'host\']!=$get_p[\'host\']));
-				if(!$error AND !empty($get_p[\'path\']) AND file_exists(PLX_ROOT.\'core/admin/\'.basename($get_p[\'path\'])) ) {
-					# filtrage des parametres de l\'url
-					$query=\'\';
-					if(isset($get_p[\'query\']) ) {
-						$query=strtok($get_p[\'query\'],\'=\');
-						$query=($query[0]!=\'d\'?\'?\'.$get_p[\'query\']:\'\');
-					}
-					# url de redirection
-					$redirect=$get_p[\'path\'].$query;
+					$get_p = $post = $title = $source = \'\';
 				}
 				if (!empty($source)) {
-					$redirect .= \'?post=\'.urlencode($post).\'&title=\'.urlencode($title).\'&source=bookmarklet\';
+					$redirect .= $get_p.\'?post=\'.urlencode($post).\'&title=\'.urlencode($title).\'&source=bookmarklet\';
 				}
 			}
 			$connected = false;
