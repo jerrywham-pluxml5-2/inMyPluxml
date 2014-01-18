@@ -40,7 +40,7 @@
 		foreach ($matches as $matche) {
 			$ext = strtolower(substr($matche[1],strrpos($matche[1], '.')+1 ));
 			if ($ext == 'jpeg') {$ext = 'jpg';}
-			$i = base64_encode_image($matche[1],$ext,3);
+			$i = base64_encode_image($matche[1],$ext,6);
 			if ($i != null) {
 				$text = str_replace($matche[1], $i, $text);
 			}
