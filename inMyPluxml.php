@@ -3,7 +3,7 @@
  * Plugin inMyPluxml
  *
  * @package	PLX
- * @version	1.2
+ * @version	1.3
  * @date	18/01/2014
  * @author	Cyril MAGUIRE
  **/
