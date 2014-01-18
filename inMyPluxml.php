@@ -32,6 +32,7 @@ class inMyPluxml extends plxPlugin {
 		$this->addHook('AdminArticleParseData', 'AdminArticleParseData');		
 		$this->addHook('AdminAuthPrepend', 'AdminAuthPrepend');		
 		$this->addHook('AdminAuthTop', 'AdminAuthTop');		
+		$this->addHook('plxAdminEditArticle', 'plxAdminEditArticle');		
 	}
 	/**
 	 * Méthode qui préconfigure le plugin
@@ -89,14 +90,12 @@ class inMyPluxml extends plxPlugin {
 		
 		$string = '
 		if (isset($_GET[\'amp;source\']) && $_GET[\'amp;source\'] == \'bookmarklet\') {
-			include(PLX_PLUGINS.\'inMyPluxml/functions.php\');
 			$options = array(\'http\' => array(\'user_agent\' => \'poche\'));
 	        $context = stream_context_create($options);
 	        $json = file_get_contents(plxUtils::getRacine(). \'plugins/inMyPluxml/3rdparty/makefulltextfeed.php?url=\'.urlencode(trim($_GET[\'post\'])).\'&max=5&links=preserve&exc=&format=json&submit=Create+Feed\', false, $context);
 	        $content = json_decode($json, true);
 	        $title = $content[\'rss\'][\'channel\'][\'item\'][\'title\'];
 	        $body = $content[\'rss\'][\'channel\'][\'item\'][\'description\'];
-	        $body = encode_img($body);
 
 			# Alimentation des variables
 			$artId = \'0000\';
@@ -246,6 +245,14 @@ class inMyPluxml extends plxPlugin {
 		';
 		echo "<?php".$string."?>";
 	}
-
+	public function plxAdminEditArticle() {
+		$string = '
+		if (isset($_SESSION[\'bookmarklet\'])) {
+			include(PLX_PLUGINS.\'inMyPluxml/functions.php\');
+			$content[\'content\'] = rec_img(plxUtils::cdataCheck(trim($content[\'content\'])),plxUtils::title2filename(plxUtils::cdataCheck(trim($content[\'title\']))));
+		}
+		';
+		echo "<?php".$string."?>";
+	}
 }
 ?>
