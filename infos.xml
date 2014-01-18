@@ -2,8 +2,8 @@
 <document>
 	<title><![CDATA[inMyPluxml]]></title>
 	<author><![CDATA[Cyril Maguire]]></author>
-	<version>1.1</version>
-	<date>14/01/2014</date>
+	<version>1.2</version>
+	<date>18/01/2014</date>
 	<site>http://www.ecyseo.net</site>
 	<description><![CDATA[Bookmarklet qui permet de renseigner les champs d'un article, à la manière de Shaarli ou Poche. Je remercie leurs auteurs pour leur contribution indirecte : SebSauvage et Nicolas Loeuillet.]]></description>
 	<requirements></requirements>

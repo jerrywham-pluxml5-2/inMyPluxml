@@ -1,4 +1,12 @@
 <?php
+/**
+ * Plugin inMyPluxml
+ *
+ * @package	PLX
+ * @version	1.2
+ * @date	18/01/2014
+ * @author	Cyril MAGUIRE
+ **/
 	/**
 	 * Méthode permettant d'encoder une image en base64
 	 * 
@@ -19,7 +27,14 @@
 			}
 	    }
 	}
-
+	/**
+	 * Méthode permettant d'encoder en base64 les images d'un texte
+	 * 
+	 * @param $text string le texte dont il faut transformer les images
+	 * @return string
+	 * 
+	 * @author Cyril MAGUIRE
+	 */
 	function encode_img($text) {
 		preg_match_all('!src=[\"\']([^\"\']+)!', $text, $matches,PREG_SET_ORDER);
 		foreach ($matches as $matche) {
