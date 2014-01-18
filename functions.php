@@ -36,13 +36,16 @@
 	 * @author Cyril MAGUIRE
 	 */
 	function encode_img($text) {
+		$array_ext = array('jpg','png','gif');
 		preg_match_all('!src=[\"\']([^\"\']+)!', $text, $matches,PREG_SET_ORDER);
 		foreach ($matches as $matche) {
 			$ext = strtolower(substr($matche[1],strrpos($matche[1], '.')+1 ));
 			if ($ext == 'jpeg') {$ext = 'jpg';}
-			$i = base64_encode_image($matche[1],$ext,6);
-			if ($i != null) {
-				$text = str_replace($matche[1], $i, $text);
+			if (in_array($ext, $array_ext)) {
+				$i = base64_encode_image($matche[1],$ext,6);
+				if ($i != null) {
+					$text = str_replace($matche[1], $i, $text);
+				}
 			}
 		}
 		return $text;
